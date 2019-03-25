@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Animal Buttons</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+</head>
+
+<body>
+    <div id="container">
+        <div class="row">
+            <div class="col">
+                <h1>Topics</h1>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                <div id="button_div"></div>
+            </div>
+        </div>
+        <br>
+        <form id="search_form">
+            <label>Enter a word to show some gifs! You also get a button if you want to see them again!</label><br>
+            <input type="text" id="search_term"><br>
+            <button id="search" data-name="article_search">Search</button>
+            <button id="clear">Clear my shame</button>
+        </form>
+
+        <div class="row" id="gifs-appear-here"></div>
+
+    </div>
+
+    <script type="text/javascript">
+
+        let topics = ["weird","corgie","beer","pugs","cheese","cartoons"]
+
+        for(let i = 0; i < topics.length; i++) {
+            addButton(topics[i], topics[i]);            
+        }
+
+        function addThisGifs() {
+            var animal = $(this).attr("data-animal");
+            addGifs(animal);
+        }
+
+        function addGifs(animal) {
+            var queryURL = "https://api.giphy.com/v1/gifs/search?q=" +
+                animal + "&api_key=dc6zaTOxFJmzC&limit=10";
+
+            $.ajax({
+                url: queryURL,
+                method: "GET"
+            }).then(function(response) {
+
+                var results = response.data;
+
+                for (var i = 0; i < results.length; i++) {
+
+                let animalDiv = $("<div class='col-xs-12, col-sm-4'>");
+                let p = $("<p>");
+                p.text("Rating: " + results[i].rating);
+                let animalImage = $("<img>");
+                animalImage.attr("src", results[i].images.fixed_height_still.url);
+                animalImage.attr("data-still", results[i].images.fixed_height_still.url);
+                animalImage.attr("data-animate", results[i].images.fixed_height.url);
+                animalImage.attr("data-state", "still");
+                animalImage.addClass("gif");
+                animalImage.click(toggleGifState);
+
+                animalDiv.append(p);
+                animalDiv.append(animalImage);
+
+                $("#gifs-appear-here").prepend(animalDiv);
+                }
+            });
+        }
+
+        $("#search").on("click", function doSearch (event) {
+            event.preventDefault();
+
+            let search_term = $("#search_term").val();
+
+            addButton(search_term, search_term);
+
+        });
+
+        $("#clear").on("click", function doSearch (event) {
+            $("#gifs-appear-here").empty();
+        });
+
+        function toggleGifState() {
+            var state = $(this).attr("data-state")
+
+            if(state === 'still') {
+                var animate = $(this).attr("data-animate");
+                $(this).attr("src", animate);
+                $(this).attr("data-state", 'animate');
+
+            }
+            else {
+                var still = $(this).attr("data-still");
+                $(this).attr("src", still);
+                $(this).attr("data-state", 'still');
+            }
+
+        }
+
+        function addButton(search_term, title_text) {
+            let searchable_btn = $("<button>");
+            searchable_btn.attr("data-animal", search_term);
+            searchable_btn.text(title_text);
+            searchable_btn.addClass("user_button");
+            searchable_btn.click(addThisGifs);
+            $("#button_div").append(searchable_btn);
+        }
+    </script>
+</body>
+
+</html>
